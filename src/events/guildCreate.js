@@ -1,4 +1,4 @@
-const ALLOWED_GUILD_ID = '1020369849622470686';
+const ALLOWED_GUILD_ID = '1559194966574637167';
 
 export default {
     name: 'guildCreate',
